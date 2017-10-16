@@ -1,0 +1,4 @@
+---
+fail2ban_slack_channel: "#moderation"
+fail2ban_slack_username: fail2ban
+fail2ban_slack_hook: https://hooks.slack.com/services/XXXXXXXXX/XXXXXXXXX/XXXXXXXXXXXXXXXXXXXXXXXX

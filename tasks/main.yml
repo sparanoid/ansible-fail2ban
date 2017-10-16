@@ -1,0 +1,68 @@
+#
+# setup fail2ban
+#
+- name: install essential packages
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - fail2ban
+  notify: reload fail2ban
+
+- name: enable fail2ban
+  service:
+    name: fail2ban
+    state: started
+    enabled: yes
+  notify: reload fail2ban
+
+- name: sync fail2ban.local
+  copy:
+    src: fail2ban/fail2ban.local
+    dest: /etc/fail2ban/fail2ban.local
+  notify: reload fail2ban
+
+- name: sync jail.local
+  copy:
+    src: fail2ban/jail.local
+    dest: /etc/fail2ban/jail.local
+  notify: reload fail2ban
+
+- name: sync custom actions
+  copy:
+    src: fail2ban/action.d/
+    dest: /etc/fail2ban/action.d/
+  notify: reload fail2ban
+
+- name: sync custom filters
+  copy:
+    src: fail2ban/filter.d/
+    dest: /etc/fail2ban/filter.d/
+  notify: reload fail2ban
+
+- name: check if custom jail exists
+  local_action: stat path={{ inventory_dir }}/files/fail2ban/jail.d/{{ inventory_hostname }}.local
+  register: custom_jail
+  tags: debug
+
+- name: custom jail warning
+  debug:
+    msg: |
+      Custom jail does not exists! please create your own config in
+        {{ inventory_dir }}/files/fail2ban/jail.d/{{ inventory_hostname }}.local
+  when: not custom_jail.stat.exists
+  tags: debug
+
+- name: sync custom jail
+  copy:
+    src: fail2ban/jail.d/{{ inventory_hostname }}.local
+    dest: /etc/fail2ban/jail.d/{{ inventory_hostname }}.local
+  notify: reload fail2ban
+  when: custom_jail.stat.exists
+  tags: fail2ban_jail
+
+- name: sync custom scripts
+  template:
+    src: ban-deny-nginx.sh
+    dest: /etc/fail2ban/scripts/
+  notify: reload fail2ban
