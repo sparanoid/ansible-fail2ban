@@ -33,19 +33,47 @@
     src: fail2ban/action.d/
     dest: /etc/fail2ban/action.d/
   notify: reload fail2ban
+  tags: debug
+
+- name: check if custom actions exist
+  local_action: stat path={{ inventory_dir }}/files/fail2ban/action.d/
+  register: custom_actions
+  tags: debug
+
+- name: sync custom actions (playbook user override)
+  copy:
+    src: "{{ inventory_dir }}/files/fail2ban/action.d/"
+    dest: /etc/fail2ban/action.d/
+  notify: reload fail2ban
+  when: custom_actions.stat.exists
+  tags: debug
 
 - name: sync custom filters
   copy:
     src: fail2ban/filter.d/
     dest: /etc/fail2ban/filter.d/
   notify: reload fail2ban
+  tags: debug
+
+- name: check if custom filters exist
+  local_action: stat path={{ inventory_dir }}/files/fail2ban/filter.d/
+  register: custom_filters
+  tags: debug
+
+- name: sync custom filters (playbook user override)
+  copy:
+    src: "{{ inventory_dir }}/files/fail2ban/filter.d/"
+    dest: /etc/fail2ban/filter.d/
+  notify: reload fail2ban
+  when: custom_filters.stat.exists
+  tags: debug
 
 - name: check if custom jail exists
   local_action: stat path={{ inventory_dir }}/files/fail2ban/jail.d/{{ inventory_hostname }}.local
   register: custom_jail
   tags: debug
 
-- name: custom jail warning
+- name: custom jail warning (playbook user override)
   debug:
     msg: |
       Custom jail does not exists! please create your own config in
