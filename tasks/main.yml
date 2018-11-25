@@ -3,10 +3,8 @@
 #
 - name: install essential packages
   yum:
-    name: "{{ item }}"
+    name: fail2ban
     state: present
-  with_items:
-    - fail2ban
   notify: reload fail2ban
 
 - name: enable fail2ban
